@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Incendio Estructural — Funciones CBCM</title>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --rojo:   #c8102e;
+      --rojo2:  #a50d25;
+      --azul:   #003da5;
+      --dorado: #b38600;
+      --verde:  #1a7a3c;
+      --morado: #6d28d9;
+      --bg:     #f5f4f2;
+      --blanco: #ffffff;
+      --gris1:  #f0eeec;
+      --gris2:  #e4e1dc;
+      --borde:  rgba(0,0,0,0.10);
+      --texto:  #1a1916;
+      --muted:  #5a5856;
+      --dim:    #9a9896;
+      --font-size: 15px;
+    }
+
+    html { font-size: var(--font-size); }
+    html, body { min-height: 100vh; background: var(--bg); color: var(--texto); font-family: 'Barlow', sans-serif; overflow-x: hidden; }
+
+    /* ── AVISO ── */
+    .aviso { background: #fffbf0; border-left: 4px solid #e0a800; border-bottom: 1px solid rgba(224,168,0,0.25); padding: 11px 20px; display: flex; align-items: flex-start; gap: 10px; }
+    .aviso-icon { font-size: 0.85rem; flex-shrink: 0; margin-top: 1px; color: #b38600; font-weight: 700; font-family: 'Barlow Condensed', sans-serif; letter-spacing: 1px; }
+    .aviso-text { font-size: 0.78rem; color: #5a4a00; line-height: 1.5; }
+    .aviso-text strong { font-weight: 600; color: #3d3200; }
+
+    /* ── HEADER ── */
+    header { position: sticky; top: 0; z-index: 100; background: var(--blanco); border-bottom: 3px solid var(--rojo); padding: 0 24px; height: 58px; display: flex; align-items: center; justify-content: space-between; gap: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+    .header-left { display: flex; align-items: center; gap: 14px; }
+    .back-btn { display: inline-flex; align-items: center; gap: 6px; background: var(--gris1); border: 1px solid var(--borde); color: var(--muted); font-family: 'Barlow Condensed', sans-serif; font-size: 0.78rem; font-weight: 600; letter-spacing: 1.5px; padding: 5px 12px; border-radius: 4px; text-decoration: none; text-transform: uppercase; transition: all 0.15s; white-space: nowrap; }
+    .back-btn:hover { background: var(--gris2); color: var(--texto); }
+    .sep { width: 1px; height: 28px; background: var(--borde); }
+    .header-title span:first-child { font-family: 'Barlow Condensed', sans-serif; font-size: 1.05rem; font-weight: 700; letter-spacing: 2px; color: var(--texto); text-transform: uppercase; display: block; line-height: 1.1; }
+    .header-title span:last-child { font-family: 'Barlow', sans-serif; font-size: 0.70rem; color: var(--muted); letter-spacing: 0.5px; }
+    .font-controls { display: flex; align-items: center; gap: 5px; }
+    .font-btn { width: 28px; height: 28px; border-radius: 4px; border: 1px solid var(--borde); background: var(--gris1); color: var(--texto); cursor: pointer; font-size: 0.88rem; font-weight: 700; display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
+    .font-btn:hover { background: var(--gris2); }
+
+    /* ── BANDA TÍTULO ── */
+    .hero-band { background: var(--rojo); padding: 20px 24px 18px; position: relative; overflow: hidden; }
+    .hero-band::after { content: 'CBCM'; position: absolute; right: -10px; top: 50%; transform: translateY(-50%); font-family: 'Barlow Condensed', sans-serif; font-size: 6rem; font-weight: 800; color: rgba(255,255,255,0.07); letter-spacing: -2px; pointer-events: none; user-select: none; }
+    .hero-band h1 { font-family: 'Barlow Condensed', sans-serif; font-size: clamp(1.3rem, 4vw, 1.9rem); font-weight: 800; letter-spacing: 3px; text-transform: uppercase; color: #fff; line-height: 1; margin-bottom: 3px; }
+    .hero-band p { font-size: 0.82rem; color: rgba(255,255,255,0.72); letter-spacing: 0.5px; }
+
+    /* ── MAIN ── */
+    main { max-width: 820px; margin: 0 auto; padding: 28px 20px 80px; }
+
+    /* ── BADGE FUENTE ── */
+    .cbcm-badge { display: flex; align-items: flex-start; gap: 14px; background: var(--blanco); border: 1px solid var(--borde); border-left: 4px solid var(--azul); border-radius: 6px; padding: 14px 18px; margin-bottom: 26px; }
+    .cbcm-badge-title { font-family: 'Barlow Condensed', sans-serif; font-size: 0.85rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--texto); margin-bottom: 3px; }
+    .cbcm-badge-sub { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
+
+    /* ── SECTION LABEL ── */
+    .sec { font-family: 'Barlow Condensed', sans-serif; font-size: 0.72rem; color: var(--dim); letter-spacing: 2.5px; text-transform: uppercase; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; }
+    .sec::after { content: ''; flex: 1; height: 1px; background: var(--borde); }
+
+    /* ── SELECTOR SISTEMÁTICA ── */
+    .sist-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 28px; }
+    .sist-btn { padding: 14px 12px; border-radius: 6px; border: 2px solid var(--borde); background: var(--blanco); color: var(--muted); cursor: pointer; transition: all 0.18s; text-align: left; font-family: 'Barlow', sans-serif; }
+    .sist-btn:hover { background: var(--gris1); color: var(--texto); border-color: rgba(0,0,0,0.18); }
+    .sist-btn.active { background: rgba(200,16,46,0.05); border-color: var(--rojo); color: var(--texto); }
+    .sist-num { font-family: 'Barlow Condensed', sans-serif; font-size: 1.6rem; font-weight: 800; color: var(--rojo); margin-bottom: 2px; line-height: 1; }
+    .sist-desc { font-size: 0.8rem; color: var(--muted); line-height: 1.4; }
+    .sist-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 7px; }
+    .sist-tag { font-family: 'Barlow Condensed', sans-serif; font-size: 0.67rem; padding: 2px 7px; border-radius: 3px; background: var(--gris1); color: var(--dim); border: 1px solid var(--borde); font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; }
+    .sist-btn.active .sist-tag { background: rgba(200,16,46,0.08); color: var(--rojo); border-color: rgba(200,16,46,0.2); }
+
+    /* ── SELECTOR PUESTO ── */
+    .puestos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; margin-bottom: 28px; }
+    .puesto-btn { padding: 10px 6px; border-radius: 6px; border: 1px solid var(--borde); background: var(--blanco); color: var(--muted); cursor: pointer; transition: all 0.18s; text-align: center; font-family: 'Barlow', sans-serif; }
+    .puesto-btn:hover { background: var(--gris1); color: var(--texto); }
+    .puesto-btn.active { border-width: 2px; }
+    .puesto-btn.disabled { opacity: 0.3; cursor: not-allowed; pointer-events: none; }
+    .pb-code { font-family: 'Barlow Condensed', sans-serif; font-size: 1.15rem; font-weight: 700; letter-spacing: 2px; margin-bottom: 2px; }
+    .pb-name { font-size: 0.67rem; letter-spacing: 0.5px; text-transform: uppercase; }
+
+    /* Colores grupo puestos */
+    .puesto-btn.g-ataque.active  { background: rgba(200,16,46,0.07);  border-color: var(--rojo);   }
+    .puesto-btn.g-ataque.active  .pb-code { color: var(--rojo); }
+    .puesto-btn.g-apoyo.active   { background: rgba(179,134,0,0.08);  border-color: var(--dorado); }
+    .puesto-btn.g-apoyo.active   .pb-code { color: var(--dorado); }
+    .puesto-btn.g-hid.active     { background: rgba(0,61,165,0.07);   border-color: var(--azul);   }
+    .puesto-btn.g-hid.active     .pb-code { color: var(--azul); }
+    .puesto-btn.g-aea.active     { background: rgba(109,40,217,0.07); border-color: var(--morado); }
+    .puesto-btn.g-aea.active     .pb-code { color: var(--morado); }
+    .puesto-btn.g-mando.active   { background: rgba(179,134,0,0.08);  border-color: var(--dorado); }
+    .puesto-btn.g-mando.active   .pb-code { color: var(--dorado); }
+
+    /* ── FICHA ── */
+    #ficha-content { animation: fadeIn 0.22s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+    .ficha-header-bar { display: flex; align-items: center; gap: 14px; background: var(--blanco); border: 1px solid var(--borde); border-radius: 6px; padding: 14px 18px; margin-bottom: 14px; }
+    .fh-code { font-family: 'Barlow Condensed', sans-serif; font-size: 1.5rem; font-weight: 800; letter-spacing: 2px; line-height: 1; }
+    .fh-name { font-size: 0.87rem; color: var(--muted); margin-top: 3px; }
+    .fh-equipo { font-family: 'Barlow Condensed', sans-serif; font-size: 0.7rem; margin-top: 6px; padding: 2px 10px; border-radius: 3px; width: fit-content; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+
+    /* NOTA CONTEXTUAL */
+    .nota-ctx { background: rgba(0,61,165,0.05); border: 1px solid rgba(0,61,165,0.15); border-left: 3px solid var(--azul); border-radius: 6px; padding: 10px 14px; margin-bottom: 14px; font-size: 0.82rem; color: var(--muted); line-height: 1.6; }
+
+    /* FASES */
+    .fase-section { margin-bottom: 12px; }
+    .fase-hdr { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; padding: 7px 12px; border-radius: 5px; background: var(--gris1); border: 1px solid var(--borde); }
+    .fase-num { font-family: 'Barlow Condensed', sans-serif; font-size: 0.72rem; font-weight: 700; letter-spacing: 2px; color: var(--rojo); text-transform: uppercase; }
+    .fase-nombre { font-family: 'Barlow Condensed', sans-serif; font-size: 0.95rem; font-weight: 700; letter-spacing: 1px; color: var(--texto); text-transform: uppercase; }
+    .tareas-lista { display: flex; flex-direction: column; gap: 6px; margin-left: 4px; }
+    .tarea-item { display: flex; gap: 10px; align-items: flex-start; padding: 9px 12px; border-radius: 5px; border-left: 3px solid; }
+    .tarea-item.alta   { border-color: var(--rojo);   background: rgba(200,16,46,0.05); }
+    .tarea-item.media  { border-color: #c87800;        background: rgba(200,120,0,0.05); }
+    .tarea-item.normal { border-color: var(--borde);   background: var(--blanco); }
+    .tarea-item.info   { border-color: var(--azul);    background: rgba(0,61,165,0.04); }
+    .tarea-bullet { font-size: 0.72rem; color: var(--dim); margin-top: 2px; flex-shrink: 0; }
+    .tarea-texto { font-size: 0.87rem; line-height: 1.6; color: var(--texto); }
+    .tarea-item.alta   .tarea-texto { color: #6b0014; }
+    .tarea-item.media  .tarea-texto { color: #5a3400; }
+    .tarea-item.info   .tarea-texto { color: #00205e; }
+
+    /* EMPTY STATE */
+    .empty-sel { text-align: center; padding: 48px 20px; color: var(--dim); }
+    .empty-sel p { font-size: 0.93rem; line-height: 1.8; }
+
+    /* PIE */
+    footer { border-top: 1px solid var(--borde); padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+    footer p { font-size: 0.70rem; color: var(--dim); letter-spacing: 0.5px; }
+    .footer-stripe { display: flex; height: 4px; width: 40px; border-radius: 2px; overflow: hidden; }
+    .footer-stripe span:first-child { flex: 1; background: var(--rojo); }
+    .footer-stripe span:last-child  { flex: 1; background: var(--azul); }
+
+    @media(max-width: 640px) {
+      header { padding: 0 14px; height: 54px; }
+      main { padding: 18px 14px 70px; }
+      .sist-grid { grid-template-columns: 1fr 1fr; }
+      .puestos-grid { grid-template-columns: repeat(4, 1fr); }
+      footer { padding: 14px; flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <a href="funciones_cm.html" class="back-btn">◀ Funciones</a>
+    <div class="sep"></div>
+    <div class="header-title">
+      <span>Incendio Estructural</span>
+      <span>Cuerpo de Bomberos · C. Madrid</span>
+    </div>
+  </div>
+  <div class="font-controls">
+    <button class="font-btn" onclick="cambiarFuente(-1)" title="Reducir texto">A−</button>
+    <button class="font-btn" onclick="cambiarFuente(1)"  title="Aumentar texto">A+</button>
+  </div>
+</header>
+
+<div class="aviso">
+  <span class="aviso-icon">! AVISO</span>
+  <p class="aviso-text"><strong>Documento de consulta rápida.</strong> Este material es un recordatorio de apoyo basado en los procedimientos operativos del CBCM. Puede contener errores o no reflejar la última versión vigente. <strong>Contrastar siempre con el procedimiento oficial actualizado antes de su aplicación.</strong></p>
+</div>
+
+<div class="hero-band">
+  <h1>Incendio Estructural</h1>
+  <p>Sistemática y funciones por puesto · Incendio en vivienda</p>
+</div>
+
+<main>
+
+  <div class="cbcm-badge">
+    <div>
+      <div class="cbcm-badge-title">Cuerpo de Bomberos — Comunidad de Madrid</div>
+      <div class="cbcm-badge-sub">Sistemática y metodología en incendios confinados · UF2 · Curso Nuevo Ingreso 2024-2025<br>Fuente: Procedimiento de intervención en incendios con uso residencial vivienda (borrador)</div>
+    </div>
+  </div>
+
+  <div class="sec">Paso 1 — Selecciona la sistemática</div>
+  <div class="sist-grid" id="sist-grid">
+
+    <button class="sist-btn" onclick="selSist('s5',this)">
+      <div class="sist-num">5</div>
+      <div class="sist-desc">Una BRP · Sin AEA ni UMJ</div>
+      <div class="sist-tags">
+        <span class="sist-tag">G1</span><span class="sist-tag">MI</span>
+        <span class="sist-tag">C1</span><span class="sist-tag">B1</span>
+        <span class="sist-tag">B2</span><span class="sist-tag">B3</span>
+      </div>
+    </button>
+
+    <button class="sist-btn" onclick="selSist('s8ext',this)">
+      <div class="sist-num">8</div>
+      <div class="sist-desc">BRP + AEA + UMJ · Con sector exterior</div>
+      <div class="sist-tags">
+        <span class="sist-tag">MIext</span><span class="sist-tag">MIint</span>
+        <span class="sist-tag">B1–B4</span><span class="sist-tag">C1</span>
+        <span class="sist-tag">C2</span><span class="sist-tag">J3</span><span class="sist-tag">CJ3</span>
+      </div>
+    </button>
+
+    <button class="sist-btn" onclick="selSist('s8sin',this)">
+      <div class="sist-num">8</div>
+      <div class="sist-desc">BRP + AEA + UMJ · Sin sector exterior</div>
+      <div class="sist-tags">
+        <span class="sist-tag">MIext</span><span class="sist-tag">MIint</span>
+        <span class="sist-tag">B1–B4</span><span class="sist-tag">C1</span>
+        <span class="sist-tag">C2</span><span class="sist-tag">J3</span><span class="sist-tag">CJ3</span>
+      </div>
+    </button>
+
+    <button class="sist-btn" onclick="selSist('s12',this)">
+      <div class="sist-num">12</div>
+      <div class="sist-desc">BRP + BRP + AEA + UMJ</div>
+      <div class="sist-tags">
+        <span class="sist-tag">G1</span><span class="sist-tag">G2</span>
+        <span class="sist-tag">AEA</span><span class="sist-tag">UMJ</span>
+      </div>
+    </button>
+
+  </div>
+
+  <div class="sec">Paso 2 — Selecciona tu puesto</div>
+  <div class="puestos-grid" id="puestos-grid"></div>
+
+  <div id="ficha-content">
+    <div class="empty-sel">
+      <p>Selecciona una sistemática<br>y tu puesto para ver las funciones</p>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <p>Cuerpo de Bomberos de la Comunidad de Madrid &nbsp;·&nbsp; Incendio estructural · 2024-2025</p>
+  <div class="footer-stripe"><span></span><span></span></div>
+</footer>
+
+<script>
+'use strict';
+
+var PUESTOS_SIST = {
+  s5:    ['MI','C1','B1','B2','B3'],
+  s8ext: ['MIext','MIint','B1','B2','B3','B4','C1','C2','J3','CJ3'],
+  s8sin: ['MIext','MIint','B1','B2','B3','B4','C1','C2','J3','CJ3'],
+  s12:   ['MIext','MIint','B1','B2','B3','B4','B5','B6','C1','C2','C3','J3','CJ3'],
+};
+
+var PUESTO_META = {
+  'MI':    { code:'MI',    nombre:'Mando Intermedio',             grupo:'g-mando', equipo:'Dirección y control' },
+  'MIext': { code:'MIext', nombre:'Mando Intermedio Exterior (JI)',grupo:'g-mando', equipo:'Dirección exterior' },
+  'MIint': { code:'MIint', nombre:'Mando Intermedio Interior',    grupo:'g-mando', equipo:'Seguridad interior' },
+  'B1':    { code:'B1',    nombre:'Bombero 1',                    grupo:'g-ataque', equipo:'Equipo de ataque' },
+  'B2':    { code:'B2',    nombre:'Bombero 2',                    grupo:'g-ataque', equipo:'Equipo de ataque' },
+  'B3':    { code:'B3',    nombre:'Bombero 3',                    grupo:'g-apoyo',  equipo:'Apoyo / Seguridad interior' },
+  'B4':    { code:'B4',    nombre:'Bombero 4',                    grupo:'g-apoyo',  equipo:'Equipo exterior / Apoyo' },
+  'B5':    { code:'B5',    nombre:'Bombero 5',                    grupo:'g-apoyo',  equipo:'Equipo de apoyo (G2)' },
+  'B6':    { code:'B6',    nombre:'Bombero 6',                    grupo:'g-apoyo',  equipo:'Equipo de apoyo (G2)' },
+  'C1':    { code:'C1',    nombre:'Conductor 1',                  grupo:'g-hid',    equipo:'Hidráulica y control ERA' },
+  'C2':    { code:'C2',    nombre:'Conductor 2 (AEA)',            grupo:'g-aea',    equipo:'AEA — Autoescala aérea' },
+  'C3':    { code:'C3',    nombre:'Conductor 3 (UMJ/G2)',         grupo:'g-hid',    equipo:'Equipo SOS / Apoyo G2' },
+  'J3':    { code:'J3',    nombre:'Jefe de Intervención (UMJ)',   grupo:'g-mando',  equipo:'Mando UMJ' },
+  'CJ3':   { code:'CJ3',   nombre:'Apoyo JI (UMJ)',               grupo:'g-apoyo',  equipo:'Apoyo coordinación' },
+};
+
+var COLORES = {
+  'g-mando':  '#b38600',
+  'g-ataque': '#c8102e',
+  'g-apoyo':  '#c87800',
+  'g-hid':    '#003da5',
+  'g-aea':    '#6d28d9',
+};
+
+var FICHAS = {
+  s5: {
+    MI: {
+      equipo:'Dirección y control',
+      nota:'Como norma general el MI asignará LAI y AOE según las necesidades.',
+      fases:[
+        {num:'F1',nombre:'IDA',tareas:[
+          {t:'Solicitud de ayudas (CL2) · Confirmar datos · Preparación mental',p:'alta'},
+        ]},
+        {num:'F2',nombre:'LLEGADA',tareas:[
+          {t:'Coordinación con otros servicios (COO GSEG)',p:'alta'},
+          {t:'Zonificación del escenario',p:'alta'},
+          {t:'Flash 1 — acciones inmediatas',p:'alta'},
+          {t:'Nivel I de intervención → CL3 preferente',p:'alta'},
+        ]},
+        {num:'F3',nombre:'VRIEMS / 360',tareas:[
+          {t:'VRIEMS completo',p:'alta'},
+          {t:'Definir Punto Base',p:'alta'},
+          {t:'Cámara térmica + Rapid + Cortina sectorizadora',p:'normal'},
+        ]},
+        {num:'F4',nombre:'ASEGURAMIENTO ESCENARIO',tareas:[
+          {t:'Plan de mitigación de riesgos',p:'media'},
+          {t:'Comunicación a dotación',p:'media'},
+        ]},
+        {num:'F5',nombre:'DESPLIEGUE / PLAN DE ACCIÓN',tareas:[
+          {t:'Plan de acción: definir táctica y técnicas',p:'alta'},
+          {t:'Ventilación cortina (antiventilación si procede)',p:'alta'},
+          {t:'Asignación de tareas a la dotación',p:'alta'},
+          {t:'Coordinación y supervisión de la intervención',p:'alta'},
+          {t:'Flash 2 — actualización situación',p:'alta'},
+          {t:'Solicitud de ayudas II si se precisa',p:'media'},
+        ]},
+        {num:'F6',nombre:'REPLIEGUE',tareas:[
+          {t:'Toma de datos y supervisión de la recogida',p:'normal'},
+          {t:'Revisión final y neutralización de riesgos',p:'alta'},
+          {t:'CL5 — comunicación fin intervención',p:'normal'},
+        ]},
+        {num:'F7',nombre:'REGRESO',tareas:[
+          {t:'CL6 · PPS',p:'normal'},
+          {t:'Ruta y repostajes · Clave 1 BRP',p:'normal'},
+          {t:'Higiene e hidratación',p:'normal'},
+          {t:'Análisis post-incidente',p:'normal'},
+        ]},
+      ]
+    },
+
+    C1: {
+      equipo:'Hidráulica y control del personal',
+      nota:'C1 es el operador/a de bomba. Mantiene el control visual de las tablillas Bodyguard y gestiona el abastecimiento de agua.',
+      fases:[
+        {num:'F1',nombre:'IDA',tareas:[
+          {t:'Estudio de itinerario y rutas alternativas',p:'normal'},
+        ]},
+        {num:'F2',nombre:'LLEGADA',tareas:[
+          {t:'Ubicación óptima del vehículo',p:'alta'},
+          {t:'Línea de abastecimiento — identificar hidrante / punto de acometida',p:'alta'},
+          {t:'Tramo de acometida — conexión y presurización',p:'alta'},
+          {t:'Punto de acometida operativo',p:'alta'},
+          {t:'Nivel I → CL3',p:'normal'},
+        ]},
+        {num:'F3',nombre:'VRIEMS',tareas:[
+          {t:'(Sin acción específica — apoyo al MI en evaluación)',p:'normal'},
+        ]},
+        {num:'F4',nombre:'ASEGURAMIENTO',tareas:[
+          {t:'Manejo de la BRP · Ajuste de presiones según necesidad',p:'alta'},
+          {t:'Recogida de tablillas Bodyguard de intervinientes con ERA',p:'alta'},
+        ]},
+        {num:'F5',nombre:'DESPLIEGUE / PLAN DE ACCIÓN',tareas:[
+          {t:'LAI — Línea de Acción Inmediata (según asignación MI)',p:'alta'},
+          {t:'AOE — Apertura de Otros Espacios (según asignación MI)',p:'alta'},
+          {t:'Control de personal con ERA y consumos (tablilla control)',p:'alta'},
+          {t:'Ventilador en acceso si se ordena VPP',p:'media'},
+          {t:'Informar al MI del nivel de depósito cada ¼ gastado',p:'media'},
+          {t:'Preparar zona de cambio de botellas en área libre de humo',p:'media'},
+        ]},
+        {num:'F6',nombre:'REPLIEGUE',tareas:[
+          {t:'Operatividad BRP — comprobación estado vehículo',p:'normal'},
+          {t:'Recoger / Limpiar material',p:'normal'},
+        ]},
+        {num:'F7',nombre:'REGRESO',tareas:[
+          {t:'Ruta y repostajes · Clave 1 BRP',p:'normal'},
+          {t:'Higiene e hidratación',p:'normal'},
+          {t:'Análisis post-incidente',p:'normal'},
+        ]},
+      ]
+    },
+
+    B1: {
+      equipo:'Equipo de ataque',
+      nota:'B1 y B2 forman siempre el EQUIPO DE ATAQUE. Su función principal es el trabajo en Zona Cero, especialmente en el interior de la vivienda incendiada.',
+      fases:[
+        {num:'F1',nombre:'IDA',tareas:[
+          {t:'Preparación mental · Canal directo con MI',p:'alta'},
+        ]},
+        {num:'F2',nombre:'LLEGADA',tareas:[
+          {t:'Nivel I de intervención → CL3',p:'alta'},
+          {t:'Ponerse ERA del exterior del camión',p:'alta'},
+          {t:'Coger Bolsa de Ataque y Bolsa SOS junto al binomio',p:'alta'},
+          {t:'Coger Rapid Air y herramienta de bombero',p:'alta'},
+          {t:'Cámara térmica (si disponible, hasta que el MIint finalice evaluación)',p:'media'},
+        ]},
+        {num:'F3',nombre:'VRIEMS',tareas:[
+          {t:'Preparación de material: Bolsa Ataque y Bolsa SOS',p:'alta'},
+          {t:'Si incendio ≥ planta 8ª: coger bolsa de transporte adicional 40m/60m',p:'media'},
+        ]},
+        {num:'F4',nombre:'ASEGURAMIENTO',tareas:[
+          {t:'A disposición del mando',p:'normal'},
+        ]},
+        {num:'F5',nombre:'DESPLIEGUE / PLAN DE ACCIÓN',tareas:[
+          {t:'Tramo de Ataque (TR Ataque) — despliegue y presurización en cota de incendio o en Punto Base según MI',p:'alta'},
+          {t:'Tramo de Seguridad (TR Seguridad) — montaje paralelo',p:'alta'},
+          {t:'Cámara térmica — evaluación continua antes y durante progresión',p:'alta'},
+          {t:'Control y extinción del foco en Zona Cero (OBR, ext, ventilación)',p:'alta'},
+          {t:'Rescate interior si hay víctimas',p:'alta'},
+          {t:'Ventilación y OBR interior',p:'media'},
+          {t:'Apoyo a C1 en tramo de acometida/transporte si B3 no puede entrar',p:'media'},
+        ]},
+        {num:'F6',nombre:'REPLIEGUE',tareas:[
+          {t:'Operatividad de equipos · Recoger y limpiar',p:'normal'},
+        ]},
+        {num:'F7',nombre:'REGRESO',tareas:[
+          {t:'Clave 1 BRP',p:'normal'},
+          {t:'Higiene e hidratación',p:'normal'},
+          {t:'Análisis post-incidente',p:'normal'},
+        ]},
+      ]
+    },
+
+    B2: {
+      equipo:'Equipo de ataque',
+      nota:'B2 forma binomio con B1. Mismas funciones que B1 como equipo de ataque en Zona Cero.',
+      fases:[]
+    },
+
+    B3: {
+      equipo:'Apoyo / Seguridad interior',
+      nota:'B3 viste ERA del interior del camión para bajarse cuanto antes. De inicio piensa en el Tramo de Transporte y el Punto Base.',
+      fases:[
+        {num:'F2',nombre:'LLEGADA',tareas:[
+          {t:'Nivel I → CL3 (preferente)',p:'alta'},
+          {t:'Ponerse ERA del interior del camión para bajar cuanto antes',p:'alta'},
+        ]},
+        {num:'F3',nombre:'VRIEMS',tareas:[
+          {t:'Colaboración con MI en evaluación',p:'alta'},
+          {t:'Bolsa de Transporte — preparación',p:'alta'},
+        ]},
+        {num:'F4',nombre:'ASEGURAMIENTO',tareas:[
+          {t:'A disposición del mando',p:'normal'},
+        ]},
+        {num:'F5',nombre:'DESPLIEGUE / PLAN DE ACCIÓN',tareas:[
+          {t:'Punto Base — despliegue y establecimiento en zona segura libre de humo',p:'alta'},
+          {t:'Tramo de Transporte — despliegue (vertical o inclinado según MI)',p:'alta'},
+          {t:'Apoyo a MI en evaluación y seguridad interior (cortina, visibilidad, evolución, víctimas)',p:'alta'},
+          {t:'LAI — uso de Línea de Acción Inmediata para ablandado, corte de propagación o protección de víctima (salvo 2 BRP a la vez)',p:'alta'},
+          {t:'Seguridad interior — control de puerta, revisión interior, ventilación cortina',p:'alta'},
+          {t:'Mediciones CO y otras en el entorno',p:'media'},
+          {t:'Ventilación, rescates, revisiones, evacuación y confinamiento tras trabajo exterior',p:'media'},
+        ]},
+        {num:'F6',nombre:'REPLIEGUE',tareas:[
+          {t:'Operatividad de equipos · Recoger y limpiar',p:'normal'},
+        ]},
+        {num:'F7',nombre:'REGRESO',tareas:[
+          {t:'Clave 1 BRP',p:'normal'},
+          {t:'Higiene e hidratación',p:'normal'},
+          {t:'Análisis post-incidente',p:'normal'},
+        ]},
+      ]
+    },
+  },
+
+  s8ext: {
+    MIext: {
+      equipo:'Dirección y control exterior (JI)',
+      nota:'El MIext actúa como Jefe de Intervención. Mantiene comunicación constante con el MIint y con CECOP.',
+      fases:[
+        {num:'F1',nombre:'IDA',tareas:[
+          {t:'CL2 — Solicitud de ayudas · Confirmar datos · Canal directo con AEA',p:'alta'},
+          {t:'Preparación mental',p:'normal'},
+        ]},
+        {num:'F2',nombre:'LLEGADA',tareas:[
+          {t:'Coordinación COO GSEG / otros servicios',p:'alta'},
+          {t:'Zonificación del escenario',p:'alta'},
+          {t:'Flash 1 — acciones inmediatas',p:'alta'},
+        ]},
+        {num:'F3',nombre:'VRIEMS EXTERIOR',tareas:[
+          {t:'VRIEMS exterior completo mediante revisión perimetral (360°)',p:'alta'},
+          {t:'Evaluar evacuación y confinamiento necesario',p:'alta'},
+          {t:'Definir Punto Base en el exterior',p:'alta'},
+          {t:'Valorar necesidad de sector exterior (rescates aéreos, tendidos, etc.)',p:'alta'},
+          {t:'Definir cuanto antes si B3 forma parte del equipo exterior',p:'alta'},
+        ]},
+        {num:'F4',nombre:'ASEGURAMIENTO',tareas:[
+          {t:'Plan de mitigación de riesgos',p:'alta'},
+          {t:'Comunicación a dotación',p:'media'},
+        ]},
+        {num:'F5',nombre:'DESPLIEGUE / PLAN DE ACCIÓN',tareas:[
+          {t:'Plan de acción global · Asignación de tareas · Coord. y supervisión',p:'alta'},
+          {t:'Flash 2 / Solicitud de Ayudas II si procede',p:'alta'},
+          {t:'Control de accesos y señalización · Seguridad general',p:'alta'},
+          {t:'Reevaluar constantemente desde exterior (color, volumen y velocidad del humo, patrones de ventilación, propagación)',p:'alta'},
+          {t:'Mientras sea JI: fuente principal de información con CECOP',p:'alta'},
+          {t:'EPI completo preparado para relevos al MIint o urgencias',p:'media'},
+        ]},
+        {num:'F6',nombre:'REPLIEGUE',tareas:[
+          {t:'Toma de datos · Supervisión recogida · Revisión final · Neutralización de riesgos · CL5',p:'normal'},
+        ]},
+        {num:'F7',nombre:'REGRESO',tareas:[
+          {t:'CL6 · PPS · Ruta / Repostajes · Higiene / Hidratación · Análisis post-incidente',p:'normal'},
+        ]},
+      ]
+    },
+
+    MIint: {
+      equipo:'Evaluación y seguridad interior',
+      nota:'El MIint dirige la seguridad interior en constante comunicación con el JI. Forma equipo con B3 (o B1/B2 si B3 se queda en exterior).',
+      fases:[
+        {num:'F1',nombre:'IDA',tareas:[
+          {t:'Preparación mental',p:'normal'},
+        ]},
+        {num:'F2',nombre:'LLEGADA',tareas:[
+          {t:'Nivel I → CL3 (preferente)',p:'alta'},
+          {t:'Ponerse ERA del interior del camión cuanto antes',p:'alta'},
+          {t:'Coger cortina sectorizadora, explosímetro, cámara térmica y Rapid Air',p:'alta'},
+        ]},
+        {num:'F3',nombre:'VRIEMS INTERIOR',tareas:[
+          {t:'VRIEMS interior: acceso seguro, acceso forzado, afectación del hueco de escalera',p:'alta'},
+          {t:'Pautas para despliegue IHT (dirección, sentido, variables)',p:'alta'},
+          {t:'Valorar Tramo de Transporte vertical o inclinado · Ayudar a B3 con la Bolsa de Transporte',p:'media'},
+        ]},
+        {num:'F4',nombre:'ASEGURAMIENTO',tareas:[
+          {t:'Decidir ubicación del Punto Base (zona segura, libre de humo)',p:'alta'},
+          {t:'Evaluar si el Tramo SOS debe empalmar (PB > 1 planta del incendio)',p:'media'},
+          {t:'Evaluar entrada: cámara térmica para detectar ruta caliente',p:'alta'},
+          {t:'Decidir cortina sectorizadora según puerta, víctimas, humo/calor y plano neutro',p:'alta'},
+          {t:'Decidir presurización del Tramo de Ataque en cota de incendio o en Punto Base',p:'alta'},
+        ]},
+        {num:'F5',nombre:'DESPLIEGUE / PLAN DE ACCIÓN',tareas:[
+          {t:'Dirección y control interior — seguridad de intervinientes',p:'alta'},
+          {t:'Comprobar constantemente integridad EPI de los intervinientes en interior',p:'alta'},
+          {t:'Seguridad interior: control de puerta, revisión interior, ventilación cortina',p:'alta'},
+          {t:'Reevaluar constantemente patrón de ventilación con cámara térmica',p:'alta'},
+          {t:'Valorar presencia de sanitarios en zona segura ante extracción de víctimas',p:'media'},
+          {t:'En urgencia: arrastre de víctimas, Rapid Air, evacuación, aporte de aire, atención sanitaria',p:'alta'},
+        ]},
+        {num:'F6',nombre:'REPLIEGUE',tareas:[
+          {t:'Operatividad de equipos · Recoger y limpiar',p:'normal'},
+        ]},
+        {num:'F7',nombre:'REGRESO',tareas:[
+          {t:'Clave 1 BRP · Higiene / Hidratación · Análisis post-incidente',p:'normal'},
+        ]},
+      ]
+    },
+
+    B1: {
+      equipo:'Equipo de ataque',
+      nota:'B1 y B2 forman el EQUIPO DE ATAQUE. Con 2 BRP a la vez se centran en la vivienda incendiada incluyendo el Tramo de Ataque.',
+      fases:[
+        {num:'F2',nombre:'LLEGADA',tareas:[
+          {t:'Nivel I → CL3 · ERA exterior camión · Bolsa Ataque + SOS + Rapid + herramienta + cámara térmica',p:'alta'},
+          {t:'Preparación mental · Canal directo G1',p:'normal'},
+        ]},
+        {num:'F3',nombre:'VRIEMS',tareas:[
+          {t:'Preparación de material: Bolsa Ataque + Bolsa SOS',p:'alta'},
+          {t:'2ª bolsa de transporte si incendio ≥ planta 8ª',p:'media'},
+        ]},
+        {num:'F4',nombre:'ASEGURAMIENTO',tareas:[
+          {t:'A disposición del mando',p:'normal'},
+        ]},
+        {num:'F5',nombre:'DESPLIEGUE',tareas:[
+          {t:'Tramo de Ataque + Tramo de Seguridad — despliegue y presurización',p:'alta'},
+          {t:'Control y extinción del foco (OBR, ext, ventilación)',p:'alta'},
+          {t:'Rescate interior · Ventilación · OBR',p:'alta'},
+          {t:'Si no hay MIint: funciones de evaluación y seguridad interior delegadas por JI',p:'info'},
+        ]},
+        {num:'F6-F7',nombre:'REPLIEGUE / REGRESO',tareas:[
+          {t:'Operatividad equipos · Recogida · Clave 1 BRP · Higiene / Hidratación',p:'normal'},
+        ]},
+      ]
+    },
+
+    B2: { equipo:'Equipo de ataque', nota:'Binomio con B1. Mismas funciones como equipo de ataque.', fases:[] },
+
+    B3: {
+      equipo:'Equipo exterior / Apoyo interior',
+      nota:'Con sector exterior B3 hace binomio con B4 como Equipo Exterior. Tras el trabajo exterior, apoyo interior.',
+      fases:[
+        {num:'F2',nombre:'LLEGADA',tareas:[
+          {t:'Nivel I → CL3 · ERA interior camión para bajar cuanto antes',p:'alta'},
+        ]},
+        {num:'F3',nombre:'VRIEMS',tareas:[
+          {t:'Arnés — preparación para trabajo en exterior/altura',p:'alta'},
+          {t:'Nivel I → CL3',p:'normal'},
+        ]},
+        {num:'F4',nombre:'ASEGURAMIENTO',tareas:[
+          {t:'LAI / AOE según asignación MI · Apoyo a B4 en AEA',p:'alta'},
+        ]},
+        {num:'F5',nombre:'DESPLIEGUE',tareas:[
+          {t:'Punto Base + Tramo de Transporte (si no hay sector exterior prioritario)',p:'alta'},
+          {t:'Extinción exterior · Rescates interiores y exteriores',p:'alta'},
+          {t:'Apoyo interior: ventilación, OBR, evacuación, confinamiento, revisiones',p:'media'},
+          {t:'LAI cuando lleguemos dos bombas a la vez',p:'media'},
+        ]},
+        {num:'F6-F7',nombre:'REPLIEGUE / REGRESO',tareas:[
+          {t:'Operatividad equipos · Recogida · Clave 1 BRP · Higiene / Hidratación',p:'normal'},
+        ]},
+      ]
+    },
+
+    B4: {
+      equipo:'Equipo exterior / Apoyo',
+      nota:'B4 trabaja inicialmente en el exterior con la AEA junto a C2. Evalúa emplazamiento e informa al MIext.',
+      fases:[
+        {num:'F2',nombre:'LLEGADA',tareas:[
+          {t:'Nivel I → CL3 · Arnés preparado',p:'alta'},
+          {t:'Emplazamiento adecuado de la AEA con C2 (alcance, volado, campos de trabajo, obstáculos, seguridad, altura)',p:'alta'},
+          {t:'Informar al MIext de aspectos relevantes del emplazamiento',p:'alta'},
+        ]},
+        {num:'F3',nombre:'VRIEMS',tareas:[
+          {t:'Preparación de material · Bolsa de Transporte si procede',p:'media'},
+        ]},
+        {num:'F4',nombre:'ASEGURAMIENTO',tareas:[
+          {t:'Control de propagación · Rescates exteriores · Puesto de mando AEA',p:'alta'},
+        ]},
+        {num:'F5',nombre:'DESPLIEGUE',tareas:[
+          {t:'Línea de ataque AEA — montaje y uso si se requiere trabajo aéreo',p:'alta'},
+          {t:'Extinción exterior · Rescates exteriores e interiores',p:'alta'},
+          {t:'Apoyo interior posterior: ventilación, OBR, rescates, evacuación, confinamiento',p:'media'},
+          {t:'Si no hay trabajo aéreo: equipo de apoyo con C2 (corte suministros, OBR, revisiones, evacuación)',p:'info'},
+        ]},
+        {num:'F6-F7',nombre:'REPLIEGUE / REGRESO',tareas:[
+          {t:'Operatividad equipos · Recogida · Clave 1 AEA · Higiene / Hidratación',p:'normal'},
+        ]},
+      ]
+    },
+
+    C1: {
+      equipo:'Hidráulica y control del personal',
+      nota:'C1 opera la bomba y gestiona los consumos de aire de todos los intervinientes con ERA.',
+      fases:[
+        {num:'F2',nombre:'LLEGADA',tareas:[
+          {t:'Ubicación BRP · Línea de Abastecimiento · Tramo y Punto de Acometida presurizado',p:'alta'},
+          {t:'Manguera de 45 en doble sin desplegar junto al Punto de Acometida (reserva)',p:'media'},
+        ]},
+        {num:'F4',nombre:'ASEGURAMIENTO',tareas:[
+          {t:'Manejo BRP · Ajuste de presiones · Tablillas Bodyguard de todos los ERA',p:'alta'},
+        ]},
+        {num:'F5',nombre:'DESPLIEGUE',tareas:[
+          {t:'LAI / AOE según asignación MI',p:'alta'},
+          {t:'Control de personal y consumos — tabla de control',p:'alta'},
+          {t:'Ventilador en acceso si se ordena VPP',p:'media'},
+          {t:'Informar de nivel de depósito al MIext cada ¼ gastado',p:'media'},
+          {t:'Gestión de zona de cambio de botellas en área libre de humo',p:'media'},
+        ]},
+        {num:'F6-F7',nombre:'REPLIEGUE / REGRESO',tareas:[
+          {t:'Operatividad BRP · Recogida · Clave 1 BRP · Higiene / Hidratación',p:'normal'},
+        ]},
+      ]
+    },
+
+    C2: {
+      equipo:'AEA — Autoescala aérea',
+      nota:'C2 valora el emplazamiento de la AEA e informa al MIext. Cuando se usa la AEA permanece en el puente de mando.',
+      fases:[
+        {num:'F2',nombre:'LLEGADA',tareas:[
+          {t:'Valorar emplazamiento AEA (alcance, volado, seguridad, obstáculos, altura) · Informar al MIext',p:'alta'},
+          {t:'Emplazamiento y preparación AEA',p:'alta'},
+        ]},
+        {num:'F3',nombre:'VRIEMS',tareas:[
+          {t:'Evaluación de operatividad AEA',p:'media'},
+        ]},
+        {num:'F4',nombre:'ASEGURAMIENTO',tareas:[
+          {t:'Puesto de mando AEA (puente) — control operacional si se usa AEA',p:'alta'},
+          {t:'Si no hay trabajo aéreo: equipo de apoyo con B4',p:'info'},
+        ]},
+        {num:'F5',nombre:'DESPLIEGUE',tareas:[
+          {t:'Línea de Abastecimiento AEA · Aporte de material · Rastreo perimetral',p:'alta'},
+          {t:'Apoyo: corte de suministros, revisiones, confinamiento, evacuación, ventilación y revisión de huecos de escalera',p:'media'},
+          {t:'EPI completo preparado para relevos o urgencias',p:'media'},
+        ]},
+        {num:'F6-F7',nombre:'REPLIEGUE / REGRESO',tareas:[
+          {t:'Operatividad AEA · Recogida · Clave 1 AEA · Higiene / Hidratación',p:'normal'},
+        ]},
+      ]
+    },
+
+    J3: {
+      equipo:'Jefe de Intervención — UMJ',
+      nota:'J3 es el Jefe de Intervención cuando llega la UMJ. Supervisa el plan, coordina grupos y enlaza con CECOP.',
+      fases:[
+        {num:'F1',nombre:'IDA',tareas:[
+          {t:'Confirmar datos · CL2 · Preparación mental',p:'alta'},
+        ]},
+        {num:'F2',nombre:'LLEGADA',tareas:[
+          {t:'CL3 · Traspaso de mando del MIext · Coordinación JGSEG y JGSAN · Validar zonificación',p:'alta'},
+          {t:'Apoyo a coordinación y acordonamiento',p:'media'},
+        ]},
+        {num:'F3',nombre:'REEVALUACIÓN',tareas:[
+          {t:'Reevaluar situación · Constitución del PM (Puesto de Mando)',p:'alta'},
+        ]},
+        {num:'F4',nombre:'ASEGURAMIENTO',tareas:[
+          {t:'Validar medidas · Espacios tácticos · Plan SOS',p:'alta'},
+        ]},
+        {num:'F5',nombre:'PLAN DE ACCIÓN',tareas:[
+          {t:'Supervisar plan de acción global · SITAC',p:'alta'},
+          {t:'Coordinar grupos de personal y medios (PM)',p:'alta'},
+          {t:'Jefe de Intervención — decisión sobre táctica, técnicas y seguridad',p:'alta'},
+          {t:'Enlace con CECOP · CL4',p:'alta'},
+        ]},
+        {num:'F6-F7',nombre:'REPLIEGUE / REGRESO',tareas:[
+          {t:'Toma de datos · CL5 · CL6 / PPS · Higiene / Hidratación',p:'normal'},
+        ]},
+      ]
+    },
+
+    CJ3: {
+      equipo:'Apoyo JI — UMJ',
+      nota:'CJ3 apoya al J3 en coordinación, información y logística. A disposición de las tareas que se le asignen.',
+      fases:[
+        {num:'F1-F2',nombre:'IDA / LLEGADA',tareas:[
+          {t:'Itinerario y alternativas',p:'normal'},
+          {t:'Apoyo a zonificación y acordonamiento',p:'media'},
+          {t:'Obtención de información del entorno',p:'media'},
+        ]},
+        {num:'F3-F4',nombre:'VRIEMS / ASEGURAMIENTO',tareas:[
+          {t:'Búsqueda de hidrantes · Revisión perimetral',p:'media'},
+        ]},
+        {num:'F5',nombre:'PLAN DE ACCIÓN',tareas:[
+          {t:'Apoyo al J3: control de espacios tácticos y accesos',p:'media'},
+          {t:'Aporte de material',p:'media'},
+          {t:'Acompañamiento de víctimas',p:'media'},
+          {t:'Control de espacios tácticos y accesos',p:'media'},
+        ]},
+        {num:'F6-F7',nombre:'REPLIEGUE / REGRESO',tareas:[
+          {t:'Revisión equipos · Recogida · Ruta / Repostajes · Clave 1 UMJ · Higiene / Hidratación',p:'normal'},
+        ]},
+      ]
+    },
+  },
+
+  s8sin: {},
+  s12:   {},
+};
+
+// s8sin derivado de s8ext con diferencias en B3 y B4
+FICHAS.s8sin = JSON.parse(JSON.stringify(FICHAS.s8ext));
+FICHAS.s8sin.B3.nota = 'En sistemática sin sector exterior B3 forma EQUIPO DE APOYO con C2/B4 desde interior.';
+FICHAS.s8sin.B3.fases = [
+  {num:'F2',nombre:'LLEGADA',tareas:[
+    {t:'Nivel I → CL3 (preferente) · ERA interior del camión',p:'alta'},
+    {t:'Colaboración con MIint en evaluación y seguridad interior',p:'alta'},
+  ]},
+  {num:'F3',nombre:'VRIEMS',tareas:[
+    {t:'Nivel I → CL3 · Preparación de material · Bolsa SOS · Suministro G1',p:'alta'},
+  ]},
+  {num:'F4',nombre:'ASEGURAMIENTO',tareas:[
+    {t:'Punto Base + Tramo Transporte · Apoyo en ataque',p:'alta'},
+    {t:'A disposición del mando',p:'normal'},
+  ]},
+  {num:'F5',nombre:'DESPLIEGUE',tareas:[
+    {t:'Punto Base + Tramo de Transporte (con apoyo equipos de ataque)',p:'alta'},
+    {t:'Apoyo Línea Ataque AEA · OBR · Rescates interiores',p:'alta'},
+    {t:'Ventilación interior · Evacuación / Confinamiento · Revisión edificio',p:'media'},
+    {t:'LAI cuando no se llega con dos bombas a la vez',p:'alta'},
+    {t:'Recepción y apoyo a víctimas extraídas de zona cero',p:'media'},
+  ]},
+  {num:'F6-F7',nombre:'REPLIEGUE / REGRESO',tareas:[
+    {t:'Operatividad equipos · Recogida · Clave 1 BRP · Higiene / Hidratación',p:'normal'},
+  ]},
+];
+FICHAS.s8sin.B4.nota = 'B4 trabaja con C2 (AEA/BNP). Sin sector exterior se orienta al apoyo interior y corte de suministros.';
+FICHAS.s8sin.B4.fases = [
+  {num:'F2',nombre:'LLEGADA',tareas:[
+    {t:'Nivel I → CL3 · Emplazamiento G2/AEA · Informar a MIext',p:'alta'},
+  ]},
+  {num:'F4',nombre:'ASEGURAMIENTO',tareas:[
+    {t:'LAI / AOE · Corte de suministros',p:'alta'},
+  ]},
+  {num:'F5',nombre:'DESPLIEGUE',tareas:[
+    {t:'Apoyo Línea Ataque AEA',p:'alta'},
+    {t:'OBR · Rescates interiores · Ventilación interior · Evacuación / Confinamiento',p:'alta'},
+    {t:'Escalera: ventilación y revisión de huecos',p:'media'},
+    {t:'Equipo de apoyo con C2 si no hay trabajo aéreo',p:'info'},
+  ]},
+  {num:'F6-F7',nombre:'REPLIEGUE / REGRESO',tareas:[
+    {t:'Operatividad equipos · Recogida · Clave 1 AEA · Higiene / Hidratación',p:'normal'},
+  ]},
+];
+
+// s12 derivado de s8ext + puestos G2
+FICHAS.s12 = JSON.parse(JSON.stringify(FICHAS.s8ext));
+FICHAS.s12.B5 = {
+  equipo:'Equipo de apoyo (G2)',
+  nota:'B5 y B6 forman el Equipo de Apoyo del G2. Si llegan a la vez que la primera BRP se encargan del Tramo de Transporte y Punto Base.',
+  fases:[
+    {num:'F2',nombre:'LLEGADA',tareas:[
+      {t:'Nivel I → CL3 · Preparación mental',p:'alta'},
+      {t:'Si llegan a la vez que primera BRP: Tramo de Transporte + Punto Base + OBR + ventilación',p:'alta'},
+      {t:'Si llegan después: a disposición del JI para recibir pautas de actuación',p:'info'},
+    ]},
+    {num:'F3-F4',nombre:'VRIEMS / ASEGURAMIENTO',tareas:[
+      {t:'Preparación material · Mochila de apoyo · Transporte',p:'media'},
+      {t:'LAI / AOE según asignación',p:'alta'},
+    ]},
+    {num:'F5',nombre:'DESPLIEGUE',tareas:[
+      {t:'Punto Base + Tramo de Transporte · Búsqueda y rescate',p:'alta'},
+      {t:'Ventilación interior · Suministro de material',p:'media'},
+      {t:'Apoyo C1 en tramo de acometida / transporte',p:'media'},
+    ]},
+    {num:'F6-F7',nombre:'REPLIEGUE / REGRESO',tareas:[
+      {t:'Operatividad equipos · Recogida · Clave 1 BRP · Higiene / Hidratación',p:'normal'},
+    ]},
+  ]
+};
+FICHAS.s12.B6 = Object.assign({}, FICHAS.s12.B5, { nota:'Binomio con B5. Mismas funciones como Equipo de Apoyo del G2.' });
+FICHAS.s12.C3 = {
+  equipo:'Conductor G2 / Equipo SOS',
+  nota:'C3 opera el vehículo del G2. Apoya en la intervención en coordinación con el MIext.',
+  fases:[
+    {num:'F2',nombre:'LLEGADA',tareas:[
+      {t:'Ubicación vehículo G2 · Nivel I → CL3',p:'alta'},
+    ]},
+    {num:'F5',nombre:'DESPLIEGUE',tareas:[
+      {t:'Manejo BRP / vehículo G2 · Ventilador en acceso si se ordena',p:'alta'},
+      {t:'Apoyo C1 en tramo de acometida / transporte',p:'media'},
+      {t:'Suministro de material a los equipos interiores',p:'media'},
+    ]},
+    {num:'F6-F7',nombre:'REPLIEGUE / REGRESO',tareas:[
+      {t:'Operatividad vehículo · Recogida · Clave 1 BRP · Higiene / Hidratación',p:'normal'},
+    ]},
+  ]
+};
+FICHAS.s12.MIint.nota = 'En sistemática 12: el MIint del G2 coordina la seguridad interior junto al G1. El MIext sigue como JI.';
+
+// B2 = B1 cuando no tiene fases propias
+['s5','s8ext','s8sin','s12'].forEach(function(s){
+  if (FICHAS[s] && FICHAS[s].B1 && FICHAS[s].B2 && !FICHAS[s].B2.fases.length) {
+    FICHAS[s].B2.fases = FICHAS[s].B1.fases;
+  }
+});
+
+// ── ESTADO ──
+var sistActual = null, puestoActual = null;
+
+function selSist(id, btn) {
+  sistActual = id; puestoActual = null;
+  document.querySelectorAll('.sist-btn').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  renderPuestos(); renderFicha();
+}
+
+function renderPuestos() {
+  var grid = document.getElementById('puestos-grid');
+  if (!sistActual) { grid.innerHTML = ''; return; }
+  var puestos = PUESTOS_SIST[sistActual] || [];
+  grid.innerHTML = puestos.map(function(p){
+    var meta = PUESTO_META[p] || { code:p, nombre:p, grupo:'g-apoyo', equipo:'' };
+    var dis  = !FICHAS[sistActual] || !FICHAS[sistActual][p];
+    return '<button class="puesto-btn '+meta.grupo+(dis?' disabled':'')
+          +'" onclick="selPuesto(\''+p+'\',this)">'
+          +'<div class="pb-code">'+meta.code+'</div>'
+          +'<div class="pb-name">'+meta.nombre.split(' ').slice(0,2).join(' ')+'</div>'
+          +'</button>';
+  }).join('');
+}
+
+function selPuesto(id, btn) {
+  puestoActual = id;
+  document.querySelectorAll('.puesto-btn').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  renderFicha();
+}
+
+function renderFicha() {
+  var cont = document.getElementById('ficha-content');
+  if (!sistActual || !puestoActual) {
+    cont.innerHTML = '<div class="empty-sel"><p>Selecciona una sistemática<br>y tu puesto para ver las funciones</p></div>';
+    return;
+  }
+  var ficha = FICHAS[sistActual] && FICHAS[sistActual][puestoActual];
+  if (!ficha) {
+    cont.innerHTML = '<div class="empty-sel"><p>Este puesto no tiene funciones<br>definidas en esta sistemática</p></div>';
+    return;
+  }
+  var meta  = PUESTO_META[puestoActual] || { code:puestoActual, nombre:puestoActual, grupo:'g-apoyo', equipo:'' };
+  var color = COLORES[meta.grupo] || '#9a9896';
+
+  var html = '<div class="ficha-header-bar">'
+    + '<div>'
+    + '<div class="fh-code" style="color:'+color+'">'+meta.code+'</div>'
+    + '<div class="fh-name">'+meta.nombre+'</div>'
+    + '<div class="fh-equipo" style="background:'+color+'18;color:'+color+';border:1px solid '+color+'33">'+ficha.equipo+'</div>'
+    + '</div></div>';
+
+  if (ficha.nota) {
+    html += '<div class="nota-ctx">'+esc(ficha.nota)+'</div>';
+  }
+
+  if (!ficha.fases || !ficha.fases.length) {
+    html += '<div class="nota-ctx">Ver funciones del puesto equivalente en esta sistemática.</div>';
+    cont.innerHTML = html; return;
+  }
+
+  ficha.fases.forEach(function(fase) {
+    html += '<div class="fase-section">'
+      + '<div class="fase-hdr">'
+      + '<span class="fase-num">'+esc(fase.num)+'</span>'
+      + '<span class="fase-nombre">'+esc(fase.nombre)+'</span>'
+      + '</div><div class="tareas-lista">';
+    (fase.tareas || []).forEach(function(tarea) {
+      html += '<div class="tarea-item '+(tarea.p||'normal')+'">'
+        + '<span class="tarea-bullet">▸</span>'
+        + '<span class="tarea-texto">'+esc(tarea.t)+'</span>'
+        + '</div>';
+    });
+    html += '</div></div>';
+  });
+
+  cont.innerHTML = html;
+  setTimeout(function(){ try{ cont.scrollIntoView({behavior:'smooth',block:'start'}); }catch(e){} }, 50);
+}
+
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+var fs = parseInt(localStorage.getItem('cbcm_fs')) || 15;
+document.documentElement.style.setProperty('--font-size', fs+'px');
+function cambiarFuente(d){
+  fs = Math.min(30, Math.max(12, fs+d));
+  document.documentElement.style.setProperty('--font-size', fs+'px');
+  localStorage.setItem('cbcm_fs', fs);
+}
+</script>
+</body>
+</html>
