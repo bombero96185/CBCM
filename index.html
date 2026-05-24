@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Funciones por Puesto — Bomberos C. Madrid</title>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --rojo:    #c8102e;
+      --rojo2:   #a50d25;
+      --azul:    #003da5;
+      --azul2:   #002c7a;
+      --bg:      #f5f4f2;
+      --blanco:  #ffffff;
+      --gris1:   #f0eeec;
+      --gris2:   #e4e1dc;
+      --borde:   rgba(0,0,0,0.10);
+      --texto:   #1a1916;
+      --muted:   #5a5856;
+      --dim:     #9a9896;
+      --font-size: 15px;
+    }
+
+    html { font-size: var(--font-size); }
+    html, body {
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--texto);
+      font-family: 'Barlow', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* ── AVISO ── */
+    .aviso {
+      background: #fffbf0;
+      border-left: 4px solid #e0a800;
+      border-bottom: 1px solid rgba(224,168,0,0.25);
+      padding: 11px 20px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .aviso-icon {
+      font-size: 0.85rem;
+      flex-shrink: 0;
+      margin-top: 1px;
+      color: #b38600;
+      font-weight: 700;
+      font-family: 'Barlow Condensed', sans-serif;
+      letter-spacing: 1px;
+    }
+    .aviso-text {
+      font-size: 0.78rem;
+      color: #5a4a00;
+      line-height: 1.5;
+    }
+    .aviso-text strong {
+      font-weight: 600;
+      color: #3d3200;
+    }
+
+    /* ── HEADER OPERATIVO ── */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--blanco);
+      border-bottom: 3px solid var(--rojo);
+      padding: 0 24px;
+      height: 58px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    }
+    .header-left { display: flex; align-items: center; gap: 14px; }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--gris1);
+      border: 1px solid var(--borde);
+      color: var(--muted);
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      padding: 5px 12px;
+      border-radius: 4px;
+      text-decoration: none;
+      text-transform: uppercase;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .back-btn:hover { background: var(--gris2); color: var(--texto); }
+
+    .sep { width: 1px; height: 28px; background: var(--borde); }
+
+    .header-title span:first-child {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: var(--texto);
+      text-transform: uppercase;
+      display: block;
+      line-height: 1.1;
+    }
+    .header-title span:last-child {
+      font-family: 'Barlow', sans-serif;
+      font-size: 0.70rem;
+      color: var(--muted);
+      letter-spacing: 0.5px;
+    }
+
+    .font-controls { display: flex; align-items: center; gap: 5px; }
+    .font-btn {
+      width: 28px; height: 28px;
+      border-radius: 4px;
+      border: 1px solid var(--borde);
+      background: var(--gris1);
+      color: var(--texto);
+      cursor: pointer;
+      font-size: 0.88rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s;
+    }
+    .font-btn:hover { background: var(--gris2); }
+
+    /* ── BANDA ROJA DE TÍTULO ── */
+    .hero-band {
+      background: var(--rojo);
+      padding: 22px 24px 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-band::after {
+      content: 'CBCM';
+      position: absolute;
+      right: -10px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 6rem;
+      font-weight: 800;
+      color: rgba(255,255,255,0.07);
+      letter-spacing: -2px;
+      pointer-events: none;
+      user-select: none;
+    }
+    .hero-band h1 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: clamp(1.5rem, 5vw, 2.1rem);
+      font-weight: 800;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #fff;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .hero-band p {
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.75);
+      letter-spacing: 0.5px;
+    }
+
+    /* ── CONTENIDO ── */
+    main {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 32px 20px 60px;
+    }
+
+    .sec-label {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.72rem;
+      color: var(--dim);
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .sec-label::after { content: ''; flex: 1; height: 1px; background: var(--borde); }
+
+    /* ── TARJETAS ── */
+    .modules { display: flex; flex-direction: column; gap: 10px; }
+
+    .mod-card {
+      background: var(--blanco);
+      border: 1px solid var(--borde);
+      border-left: 4px solid var(--card-color, var(--rojo));
+      border-radius: 6px;
+      padding: 20px 22px;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+      position: relative;
+      transition: transform 0.18s, box-shadow 0.18s, border-left-color 0.18s;
+    }
+    .mod-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.10);
+    }
+    .mod-card.disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      pointer-events: none;
+      border-left-color: var(--dim);
+    }
+
+    .mod-inner { display: flex; align-items: flex-start; gap: 18px; }
+
+    /* Número de orden en lugar de icono */
+    .mod-num {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: var(--card-color, var(--rojo));
+      line-height: 1;
+      flex-shrink: 0;
+      width: 36px;
+      text-align: center;
+      opacity: 0.20;
+      transition: opacity 0.18s;
+    }
+    .mod-card:hover .mod-num { opacity: 0.40; }
+
+    .mod-info { flex: 1; }
+    .mod-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--texto);
+      margin-bottom: 5px;
+      line-height: 1.1;
+    }
+    .mod-desc {
+      font-size: 0.875rem;
+      color: var(--muted);
+      line-height: 1.55;
+      margin-bottom: 12px;
+    }
+    .mod-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+    .mod-tag {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.68rem;
+      padding: 2px 9px;
+      border-radius: 3px;
+      background: var(--gris1);
+      color: var(--muted);
+      border: 1px solid var(--borde);
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .mod-arrow {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--card-color, var(--rojo));
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .mod-arrow::after { content: '→'; transition: transform 0.18s; }
+    .mod-card:hover .mod-arrow::after { transform: translateX(5px); }
+
+    /* ── PIE ── */
+    footer {
+      border-top: 1px solid var(--borde);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    footer p {
+      font-size: 0.70rem;
+      color: var(--dim);
+      letter-spacing: 0.5px;
+    }
+    .footer-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .footer-stripe {
+      display: flex;
+      height: 4px;
+      width: 40px;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .footer-stripe span:first-child  { flex: 1; background: var(--rojo); }
+    .footer-stripe span:last-child   { flex: 1; background: var(--azul); }
+
+    @media(max-width:600px) {
+      header    { padding: 0 14px; height: 54px; }
+      .hero-band { padding: 18px 14px 16px; }
+      main      { padding: 24px 14px 60px; }
+      footer    { padding: 14px; flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Header operativo -->
+<header>
+  <div class="header-left">
+    <a href="cbcm.html" class="back-btn">◀ CBCM</a>
+    <div class="sep"></div>
+    <div class="header-title">
+      <span>Funciones por Puesto</span>
+      <span>Cuerpo de Bomberos · C. Madrid</span>
+    </div>
+  </div>
+  <div class="font-controls">
+    <button class="font-btn" onclick="cambiarFuente(-1)" title="Reducir texto">A−</button>
+    <button class="font-btn" onclick="cambiarFuente(1)"  title="Aumentar texto">A+</button>
+  </div>
+</header>
+
+<!-- Aviso de consulta rápida -->
+<div class="aviso">
+  <span class="aviso-icon">! AVISO</span>
+  <p class="aviso-text"><strong>Documento de consulta rápida.</strong> Este material es un recordatorio de apoyo basado en los procedimientos operativos del CBCM. Puede contener errores o no reflejar la última versión vigente. <strong>Contrastar siempre con el procedimiento oficial actualizado antes de su aplicación.</strong></p>
+</div>
+
+<!-- Banda de título roja -->
+<div class="hero-band">
+  <h1>Funciones por Puesto</h1>
+  <p>Selecciona el tipo de intervención</p>
+</div>
+
+<!-- Contenido -->
+<main>
+
+  <div class="sec-label">Procedimientos operativos</div>
+
+  <div class="modules">
+
+    <!-- Incendio estructural -->
+    <a href="funciones_cm_incendio.html" class="mod-card" style="--card-color:#c8102e;">
+      <div class="mod-inner">
+        <div class="mod-num">01</div>
+        <div class="mod-info">
+          <div class="mod-title">Incendio Estructural</div>
+          <div class="mod-desc">Sistemática y funciones por puesto en incendios confinados con uso residencial. Basado en el procedimiento operativo CBCM 2024-2025.</div>
+          <div class="mod-tags">
+            <span class="mod-tag">5 componentes</span>
+            <span class="mod-tag">8 con exterior</span>
+            <span class="mod-tag">8 sin exterior</span>
+            <span class="mod-tag">12 componentes</span>
+          </div>
+          <div class="mod-arrow">Acceder al procedimiento</div>
+        </div>
+      </div>
+    </a>
+
+    <!-- Accidente de tráfico -->
+    <a href="#" class="mod-card disabled" style="--card-color:#9a9896;">
+      <div class="mod-inner">
+        <div class="mod-num">02</div>
+        <div class="mod-info">
+          <div class="mod-title">Accidente de Tráfico</div>
+          <div class="mod-desc">Sistemática y funciones por puesto en accidentes de tráfico. Disponible cuando se incorpore la documentación de procedimiento.</div>
+          <div class="mod-tags">
+            <span class="mod-tag">Pendiente documentación</span>
+          </div>
+          <div class="mod-arrow" style="color:var(--dim);">Próximamente</div>
+        </div>
+      </div>
+    </a>
+
+  </div>
+
+</main>
+
+<footer>
+  <p>Cuerpo de Bomberos de la Comunidad de Madrid &nbsp;·&nbsp; ASEM 112 &nbsp;·&nbsp; Est. 1967</p>
+  <div class="footer-logo">
+    <div class="footer-stripe"><span></span><span></span></div>
+  </div>
+</footer>
+
+<script>
+  var fs = parseInt(localStorage.getItem('fontSize_cbcm')) || 15;
+  document.documentElement.style.setProperty('--font-size', fs + 'px');
+  function cambiarFuente(d) {
+    fs = Math.min(30, Math.max(12, fs + d));
+    document.documentElement.style.setProperty('--font-size', fs + 'px');
+    localStorage.setItem('fontSize_cbcm', fs);
+  }
+</script>
+
+</body>
+</html>
